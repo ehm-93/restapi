@@ -89,18 +89,19 @@ public class RestFilterParser {
 
         JsonObject filterObject = new JsonParser().parse(filterJson).getAsJsonObject();
         JsonArray conditions = filterObject.get("conditions").getAsJsonArray();
-        if (conditions != null) {
+        if (conditions != null && conditions.size() != 0) {
             for (JsonElement conditionElement : conditions) {
                 JsonObject conditionObject = conditionElement.getAsJsonObject();
                 RestFilterCondition restFilterCondition = parseConditionObject(conditionObject, metaClass);
                 rootCondition.getConditions().add(restFilterCondition);
             }
+            Map<String, Object> queryParameters = new HashMap<>();
+            collectQueryParameters(rootCondition, queryParameters);
+
+            return new RestFilterParseResult(rootCondition.toJpql(), queryParameters);
+        } else {
+            return new RestFilterParseResult(null, null);
         }
-
-        Map<String, Object> queryParameters = new HashMap<>();
-        collectQueryParameters(rootCondition, queryParameters);
-
-        return new RestFilterParseResult(rootCondition.toJpql(), queryParameters);
     }
 
     protected void collectQueryParameters(RestFilterCondition condition, Map<String, Object> queryParameters) {
